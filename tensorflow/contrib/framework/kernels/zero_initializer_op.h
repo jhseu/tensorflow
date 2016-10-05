@@ -21,7 +21,16 @@ limitations under the License.
 
 namespace tensorflow {
 
-template <typename T>
+namespace functor {
+template <typename Device, typename T>
+struct TensorZero {
+  void operator()(const Device& d, typename TTypes<T>::Flat t) {
+    t.device(d) = t.constant(T(0));
+  }
+};
+}  // namespace functor
+
+template <typename Device, typename T>
 class ZeroInitializerOp : public OpKernel {
   public:
     explicit ZeroInitializerOp(OpKernelConstruction* ctx) : OpKernel(ctx) {
@@ -41,14 +50,8 @@ class ZeroInitializerOp : public OpKernel {
       OP_REQUIRES_OK(ctx, ctx->allocate_persistent(
             input.dtype(), input.shape(), &out_persistent,
             &out_tensor, attr));
-      auto out_tensor_flat = out_tensor->flat<T>();
-      int total_size = static_cast<int>(1);
-      for (int d = static_cast<int>(0); d < out_tensor->dims(); d++) {
-        total_size *= out_tensor->dim_size(d);
-      }
-      for (int idx = static_cast<int>(0); idx < total_size; idx++) {
-        out_tensor_flat(idx) = static_cast<T>(0);
-      }
+      functor::TensorZero<Device, T>()(ctx->eigen_device<Device>(),
+          out_tensor->flat<T>());
       ctx->replace_ref_input(0, *out_tensor, true);
       // we always return the input ref.
       ctx->forward_ref_input_to_ref_output(0, 0);

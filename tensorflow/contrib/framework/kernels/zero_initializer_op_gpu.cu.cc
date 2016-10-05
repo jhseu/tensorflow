@@ -13,36 +13,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#define EIGEN_USE_THREADS
-
 #if GOOGLE_CUDA
+
 #define EIGEN_USE_GPU
-#endif  // GOOGLE_CUDA
 
 #include "tensorflow/contrib/framework/kernels/zero_initializer_op.h"
 
 #include "tensorflow/core/framework/register_types.h"
-#include "tensorflow/core/framework/op_kernel.h"
 
 namespace tensorflow {
+namespace functor {
 
-using CPUDevice = Eigen::ThreadPoolDevice;
 using GPUDevice = Eigen::GpuDevice;
 
-#define REGISTER_KERNELS(D, T) \
-  REGISTER_KERNEL_BUILDER(Name("ZeroInitializer") \
-      .Device(DEVICE_##D) \
-      .TypeConstraint<T>("T"), \
-      ZeroInitializerOp<D##Device, T>);
-#define REGISTER_CPU_KERNELS(T) REGISTER_KERNELS(CPU, T);
-TF_CALL_REAL_NUMBER_TYPES(REGISTER_CPU_KERNELS);
-#undef REGISTER_CPU_KERNELS
+#define DEFINE_GPU_SPECS(T) template struct TensorZero<GPUDevice, T>;
+TF_CALL_GPU_NUMBER_TYPES(DEFINE_GPU_SPECS);
+#undef DEFINE_GPU_SPECS
 
-#if GOOGLE_CUDA
-#define REGISTER_GPU_KERNELS(T) REGISTER_KERNELS(GPU, T);
-TF_CALL_GPU_NUMBER_TYPES(REGISTER_GPU_KERNELS);
-#undef REGISTER_GPU_KERNELS
-#endif // GOOGLE_CUDA
+}  // namespace functor
+}  // namespace tensorflow
 
-#undef REGISTER_KERNELS
-} // namespace tensorflow
+#endif  // GOOGLE_CUDA
