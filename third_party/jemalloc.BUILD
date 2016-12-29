@@ -83,7 +83,6 @@ cc_library(
     ],
     includes = ["include"],
     copts = [
-        "-w",
         "-D_GNU_SOURCE",
         "-D_REENTRANT",
     ],
