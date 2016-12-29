@@ -115,9 +115,10 @@ genrule(
     outs = ["include/jemalloc/internal/public_symbols.txt"],
     cmd = "\n".join([
         "cat <<'EOF' > $@",
+        "free:jemalloc_free",
         "malloc:jemalloc_malloc",
         "posix_memalign:jemalloc_posix_memalign",
-        "free:jemalloc_free",
+        "realloc:jemalloc_realloc",
     ]),
 )
 

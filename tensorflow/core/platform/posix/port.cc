@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include "jemalloc/jemalloc.h"
 #include "tensorflow/core/platform/cpu_info.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/types.h"
@@ -69,15 +70,15 @@ void *aligned_malloc(size_t size, int minimum_alignment) {
   // sizeof(void*). In this case, fall back on malloc which should return
   // memory aligned to at least the size of a pointer.
   const int required_alignment = sizeof(void *);
-  if (minimum_alignment < required_alignment) return malloc(size);
-  if (posix_memalign(&ptr, minimum_alignment, size) != 0)
+  if (minimum_alignment < required_alignment) return jemalloc_malloc(size);
+  if (jemalloc_posix_memalign(&ptr, minimum_alignment, size) != 0)
     return NULL;
   else
     return ptr;
 #endif
 }
 
-void aligned_free(void *aligned_memory) { free(aligned_memory); }
+void aligned_free(void *aligned_memory) { jemalloc_free(aligned_memory); }
 
 void MallocExtension_ReleaseToSystem(std::size_t num_bytes) {
   // No-op.

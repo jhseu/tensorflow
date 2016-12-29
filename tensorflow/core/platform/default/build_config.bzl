@@ -176,7 +176,10 @@ def tf_kernel_tests_linkstatic():
   return 0
 
 def tf_additional_lib_deps():
-  deps = ["@jemalloc//:jemalloc"]
+  return ["@jemalloc//:jemalloc"]
+
+def tf_additional_core_deps():
+  deps = []
   if WITH_GCP_SUPPORT:
     deps.append("//tensorflow/core/platform/cloud:gcs_file_system")
   if WITH_HDFS_SUPPORT:

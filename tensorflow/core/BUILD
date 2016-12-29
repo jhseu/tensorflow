@@ -84,12 +84,13 @@ load(
     "//tensorflow/core:platform/default/build_config.bzl",
     "tf_proto_library",
     "tf_proto_library_cc",
+    "tf_additional_core_deps",
+    "tf_additional_lib_deps",
     "tf_additional_lib_hdrs",
     "tf_additional_lib_srcs",
     "tf_additional_minimal_lib_srcs",
     "tf_additional_proto_hdrs",
     "tf_additional_proto_srcs",
-    "tf_additional_lib_deps",
     "tf_additional_stream_executor_srcs",
     "tf_additional_cupti_wrapper_deps",
     "tf_additional_libdevice_data",
@@ -1127,7 +1128,7 @@ cc_library(
     ],
     copts = tf_copts(),
     linkopts = ["-ldl"],
-    deps = [
+    deps = tf_additional_lib_deps() + [
         ":lib_proto_parsing",
         ":protos_all_cc",
         "//tensorflow/core/platform/default/build_config:platformlib",
@@ -1339,7 +1340,7 @@ tf_cuda_library(
         ],
     ),
     copts = tf_copts(),
-    deps = [
+    deps = tf_additional_core_deps() + [
         ":framework",
         ":framework_internal",
         ":function_ops_op_lib",
@@ -1351,7 +1352,7 @@ tf_cuda_library(
         ":protos_all_cc",
         "//third_party/eigen3",
         "//tensorflow/core/kernels:required",
-    ] + tf_additional_lib_deps(),
+    ],
     alwayslink = 1,
 )
 

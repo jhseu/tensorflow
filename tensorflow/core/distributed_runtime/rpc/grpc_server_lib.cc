@@ -17,10 +17,13 @@ limitations under the License.
 
 #include <limits>
 #include <memory>
+#include <mutex>
 
+#include "grpc/support/alloc.h"
 #include "grpc++/grpc++.h"
 #include "grpc++/security/credentials.h"
 #include "grpc++/server_builder.h"
+#include "jemalloc/jemalloc.h"
 
 #include "tensorflow/core/common_runtime/device_factory.h"
 #include "tensorflow/core/common_runtime/device_mgr.h"
@@ -288,6 +291,8 @@ Status GrpcServer::Create(const ServerDef& server_def, Env* env,
 
 namespace {
 
+std::once_flag grpc_init;
+
 class GrpcServerFactory : public ServerFactory {
  public:
   bool AcceptsOptions(const ServerDef& server_def) override {
@@ -296,6 +301,13 @@ class GrpcServerFactory : public ServerFactory {
 
   Status NewServer(const ServerDef& server_def,
                    std::unique_ptr<ServerInterface>* out_server) override {
+    std::call_once(grpc_init, []() {
+        gpr_allocation_functions alloc_fns;
+        alloc_fns.malloc_fn = jemalloc_malloc;
+        alloc_fns.realloc_fn = jemalloc_realloc;
+        alloc_fns.free_fn = jemalloc_free;
+        gpr_set_allocation_functions(alloc_fns);
+    });
     return GrpcServer::Create(server_def, Env::Default(), out_server);
   }
 };
