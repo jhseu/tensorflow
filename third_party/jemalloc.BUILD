@@ -83,6 +83,8 @@ cc_library(
     ],
     includes = ["include"],
     copts = [
+        "-O3",
+        "-funroll-loops",
         "-D_GNU_SOURCE",
         "-D_REENTRANT",
     ],
