@@ -1,5 +1,6 @@
 CUDA_VERSION = "%{cuda_version}"
 CUDNN_VERSION = "%{cudnn_version}"
+CUDART_DIR = "%{cudart_dir}"
 PLATFORM = "%{platform}"
 
 def cuda_sdk_version():
@@ -7,6 +8,9 @@ def cuda_sdk_version():
 
 def cudnn_sdk_version():
   return CUDNN_VERSION
+
+def cudart_dir():
+  return CUDART_DIR
 
 def readlink_command():
   if PLATFORM == "Darwin":

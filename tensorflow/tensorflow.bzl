@@ -19,7 +19,7 @@ load(
     "if_cuda",
     "cuda_default_copts"
 )
-
+load("@local_config_cuda//cuda:platform.bzl", "cudart_dir")
 load(
     "//third_party/mkl:build_defs.bzl",
     "if_mkl",
@@ -791,7 +791,18 @@ def tf_py_wrap_cc(name, srcs, swig_includes=[], deps=[], copts=[], **kwargs):
               module_name=module_name,
               py_module_name=name)
   extra_linkopts = select({
-      "@local_config_cuda//cuda:darwin": [
+      "@local_config_cuda//cuda:darwin_using_nvcc": [
+          # libcudart by default links to @rpath/libcudart.VERSION.dylib
+          # Bazel by default adds the relative path to the library at
+          # ../local_config_cuda/cuda/lib. We add the absolute path that the
+          # user specified during configuration to the library's rpaths.
+          # Otherwise, users need to set DYLD_LIBRARY_PATH and, as a
+          # consequence, disable SIP.
+          "-Wl,-rpath,{}".format(cudart_dir()),
+          "-Wl,-exported_symbols_list",
+          "//tensorflow:tf_exported_symbols.lds",
+      ],
+      "//tensorflow:darwin": [
           "-Wl,-exported_symbols_list",
           "//tensorflow:tf_exported_symbols.lds"
       ],
@@ -802,7 +813,7 @@ def tf_py_wrap_cc(name, srcs, swig_includes=[], deps=[], copts=[], **kwargs):
           "//tensorflow:tf_version_script.lds"
       ]})
   extra_deps += select({
-      "@local_config_cuda//cuda:darwin": [
+      "//tensorflow:darwin": [
         "//tensorflow:tf_exported_symbols.lds"
       ],
       "//tensorflow:windows": [

@@ -11,6 +11,16 @@ config_setting(
     },
 )
 
+# Required because we can't nest select statements:
+# https://github.com/bazelbuild/bazel/issues/1623
+config_setting(
+    name = "darwin_using_nvcc",
+    values = {
+        "cpu": "darwin",
+        "define": "using_cuda_nvcc=true",
+    },
+)
+
 config_setting(
     name = "using_clang",
     values = {

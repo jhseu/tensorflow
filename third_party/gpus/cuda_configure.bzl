@@ -681,6 +681,7 @@ def _create_dummy_repository(repository_ctx):
        {
            "%{cuda_version}": _DEFAULT_CUDA_VERSION,
            "%{cudnn_version}": _DEFAULT_CUDNN_VERSION,
+           "%{cudart_dir}": "{}/lib".format(_DEFAULT_CUDA_TOOLKIT_PATH),
            "%{platform}": cpu_value,
        })
 
@@ -777,10 +778,12 @@ def _create_cuda_repository(repository_ctx):
            "%{cupti_lib}": cuda_libs["cupti"].file_name,
        })
 
+  cudart_dir = str(repository_ctx.path(cuda_libs["cudart"].path).dirname)
   _tpl(repository_ctx, "cuda:platform.bzl",
        {
            "%{cuda_version}": cuda_config.cuda_version,
            "%{cudnn_version}": cuda_config.cudnn_version,
+           "%{cudart_dir}": cudart_dir,
            "%{platform}": cuda_config.cpu_value,
        })
 
